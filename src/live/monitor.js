@@ -1,5 +1,5 @@
 var fs      = require("fs");
-var watch = require('watch');
+var watch   = require('watch');
 var sys     = require('sys')
 var exec    = require('child_process').exec;
 var io;
@@ -10,12 +10,15 @@ var watch_dir = function(dir){
     this.callback =  callback;
 };
 
+const updateDelay = 500;
+
 
 var monitor = {
 	directory: '',
 	socket: null,
 	command: true,
     updated: false,
+	isInLazy: false,
 	watch: function(server, directory, command)
 	{
 		that 		   = this;
@@ -30,18 +33,18 @@ var monitor = {
 			});
 		});
         console.log(directory);
-        watch.watchTree(directory, function (f, curr, prev) {
+        watch.watchTree(directory, function (f, curr, prev) {		
             if (typeof f == "object" && prev === null && curr === null) {
               // Finished walking the tree
             } else if (prev === null) {
               // f is a new file
-              that.emmit();
+              that.emmit(f);
             } else if (curr.nlink === 0) {
               // f was removed
-              that.emmit();
+              that.emmit(f);
             } else {
               // f was changed
-              that.emmit();
+              that.emmit(f);
             }
         });
     	io.setMaxListeners(0);
@@ -49,10 +52,17 @@ var monitor = {
 
         return this.updated;
 	},
-	emmit: function()
+	emmit: function(f)
 	{
-		if (this.socket != null) {
-			console.log('file changed, browser will reload!');
+		if (this.socket != null && !this.isInLazy) {
+			
+			this.isInLazy = true;
+			setTimeout(()=>{
+				this.isInLazy = false;
+			}, updateDelay)
+
+
+			console.log(new Date(), f + ' changed, browser will be reload!');
 			connection = this.socket.emit('update', { refresh: true });
 			if (this.command !== true) {
 				exec(this.command, function(error, stdout, stderr){
