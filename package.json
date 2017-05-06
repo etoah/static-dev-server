@@ -1,21 +1,23 @@
 {
-  "name": "static-server",
-  "description": "A simple http server to serve static resource files from a local directory.",
-  "version": "2.0.4",
-  "author": "Eduardo Bohrer <nbluisrs@gmail.com>",
+  "name": "static-dev-server",
+  "description": "A simple http server to serve  static resource files from a local directory and auto reload when file change.",
+  "version": "1.0.0",
+  "author": "lucien <etoahn@163.com>, Eduardo Bohrer <nbluisrs@gmail.com>",
   "keywords": [
     "static",
     "server",
+    "auto-reflesh",
+    "watch",
     "local",
     "assets"
   ],
   "main": "./server.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:nbluis/static-server.git"
+    "url": "git@github.com:etoah/static-dev-server.git"
   },
   "bin": {
-    "static-server": "./bin/static-server.js"
+    "static": "./bin/static-dev-server.js"
   },
   "scripts": {
     "test": "mocha",
@@ -29,7 +31,9 @@
     "chalk": "^0.5.1",
     "commander": "^2.3.0",
     "file-size": "0.0.5",
-    "mime": "^1.2.11"
+    "mime": "^1.2.11",
+    "socket.io": "^1.7.3",
+    "watch": "^1.0.2"
   },
   "license": {
     "type": "MIT",

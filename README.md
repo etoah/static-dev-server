@@ -2,12 +2,16 @@
 
 # Node static server
 A simple http server to serve static resource files from a local directory.
+fork from static server , but extend below feature:
+
+1.  Auto refresh when file change.
+2.  Command changed from `static-server`to `static`
 
 ## Getting started
 * [Install node.js](http://nodejs.org/download/)
 * Install npm package globally `npm -g install static-server`
 * Go to the folder you want to serve
-* Run the server `static-server`
+* Run the server `static`
 
 ## Options
 
@@ -26,7 +30,7 @@ The server may be used as a dependency HTTP server.
 ### Example
 
 ```javascript
-var StaticServer = require('static-server');
+var StaticServer = require('static-dev-server');
 var server = new StaticServer({
   rootPath: '.',            // required, the root of the server file tree
   name: 'my-http-server',   // optional, will set "X-Powered-by" HTTP header

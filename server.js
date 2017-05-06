@@ -31,7 +31,8 @@ var mime         = require('mime');
 var path         = require('path');
 var fs           = require('fs');
 var slice        = Array.prototype.slice;
-
+var emberScript  = require('./src/live/embedScript');
+var monitor  = require('./src/live/monitor');
 
 /**
 Exposes the StaticServer class
@@ -71,6 +72,7 @@ function StaticServer(options) {
   this.host = options.host;
   this.port = options.port;
   this.cors = options.cors;
+  this.restartCommand = options.restartCommand;
   this.rootPath = path.resolve(options.rootPath);
   this.followSymlink = !!options.followSymlink;
   this.templates = {
@@ -91,6 +93,7 @@ function StaticServer(options) {
   });
 
 }
+
 util.inherits(StaticServer, EventEmitter);
 
 /**
@@ -106,6 +109,9 @@ Start listening on the given host:port
 */
 StaticServer.prototype.start = function start(callback) {
   this._socket = http.createServer(requestHandler(this)).listen(this.port, this.host, callback);
+
+  //monitor file change
+  monitor.watch(this._socket, this.rootPath, this.restartCommand);
 }
 
 
@@ -117,6 +123,12 @@ StaticServer.prototype.stop = function stop() {
     this._socket.close();
     this._socket = null;
   }
+}
+
+StaticServer.prototype.restart = function restart(reason, callback) {
+  this.stop();
+  this.emit('restart', reason);
+  this._socket = http.createServer(requestHandler(this)).listen(this.port, this.host, callback);
 }
 
 
@@ -460,7 +472,9 @@ function sendFile(server, req, res, stat, file) {
     res.headers['Content-Type'] = 'multipart/byteranges; boundary=' + MULTIPART_SEPARATOR;
   } else {
     res.headers['Content-Type']   = contentType;
-    res.headers['Content-Length'] = contentParts.size;
+
+    //TODO: criticl length
+    //res.headers['Content-Length'] = contentParts.size;
 
     if (contentParts.ranges) {
       res.headers['Content-Range'] = req.headers.range;
@@ -516,6 +530,10 @@ function sendFile(server, req, res, stat, file) {
         }).on('error', function (err) {
           sendError(server, req, res, err);
         }).on('data', function (chunk) {
+          if(contentType === 'text/html'){
+            chunk = emberScript(chunk, server.port);
+            //res.headers['Content-Length'] = contentParts.size;
+          }
           res.write(chunk);
         });
     })();
