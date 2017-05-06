@@ -3,13 +3,6 @@ var watch   = require('watch');
 var sys     = require('sys')
 var exec    = require('child_process').exec;
 var io;
-
-var watch_dir = function(dir){
-	this.path = dir;
-	this.watch_for = Inotify.IN_OPEN | Inotify.IN_CLOSE;
-    this.callback =  callback;
-};
-
 const updateDelay = 500;
 
 
@@ -19,6 +12,7 @@ var monitor = {
 	command: true,
     updated: false,
 	isInLazy: false,
+	listeners: [],
 	watch: function(server, directory, command)
 	{
 		that 		   = this;
@@ -32,37 +26,48 @@ var monitor = {
 				that.socket = socket;
 			});
 		});
-        console.log(directory);
+
         watch.watchTree(directory, function (f, curr, prev) {		
             if (typeof f == "object" && prev === null && curr === null) {
               // Finished walking the tree
             } else if (prev === null) {
               // f is a new file
-              that.emmit(f);
+              that.fixEmmit(f);
             } else if (curr.nlink === 0) {
               // f was removed
-              that.emmit(f);
+              that.fixEmmit(f);
             } else {
               // f was changed
-              that.emmit(f);
+              that.fixEmmit(f);
             }
         });
+		
     	io.setMaxListeners(0);
     	server.setMaxListeners(0);
 
+		this.addListener(this.emit);
+
         return this.updated;
 	},
-	emmit: function(f)
+
+	fixEmmit: function(f)
 	{
-		if (this.socket != null && !this.isInLazy) {
+		if (!this.isInLazy) {
 			
 			this.isInLazy = true;
 			setTimeout(()=>{
 				this.isInLazy = false;
 			}, updateDelay)
 
+			this.listeners.forEach((cb)=>{
+				cb.call(this, f)
+			})
+		}
+	},
 
-			console.log(new Date(), f + ' changed, browser will be reload!');
+	emit: function(f){
+		if (this.socket != null) {
+
 			connection = this.socket.emit('update', { refresh: true });
 			if (this.command !== true) {
 				exec(this.command, function(error, stdout, stderr){
@@ -70,6 +75,16 @@ var monitor = {
 				});
 			}
 		}
+	},
+
+	addListener(f){
+		if(typeof f !== 'function'){
+			return null;
+		}
+
+		this.listeners.push(f);
 	}
 }
+
+
 module.exports = monitor;

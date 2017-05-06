@@ -77,6 +77,10 @@ server.on('response', function (req, res, err, file, stat) {
 });
 
 
+server.monitor.addListener((f)=>{
+  console.log(chalk.yellow('<--'), f.replace(program.rootPath, '') + ' changed, browser will be reload!');
+})
+
 
 /**
 Prepare the 'exit' handler for the program termination

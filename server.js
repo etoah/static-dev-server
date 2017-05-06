@@ -79,6 +79,7 @@ function StaticServer(options) {
     'index': (options.templates.index || DEFAULT_INDEX),
     'notFound': options.templates.notFound
   };
+  this.monitor = monitor;
 
   if (options.index) {
     console.log("options.index is now deprecated please use options.templates.index instead.");
@@ -111,7 +112,7 @@ StaticServer.prototype.start = function start(callback) {
   this._socket = http.createServer(requestHandler(this)).listen(this.port, this.host, callback);
 
   //monitor file change
-  monitor.watch(this._socket, this.rootPath, this.restartCommand);
+  this.monitor.watch(this._socket, this.rootPath, this.restartCommand);
 }
 
 
