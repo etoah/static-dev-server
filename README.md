@@ -1,10 +1,11 @@
 [![Build Status](https://secure.travis-ci.org/nbluis/static-server.svg?branch=master)](http://travis-ci.org/nbluis/static-server)
 
 # Node static server
-A simple http server to serve static resource files from a local directory.
-fork from static server , but extend below feature:
+A simple http server to serve static resource files from a local directory and watching.
 
-1.  Auto refresh when file change.
+fork from static-server , but extend below feature:
+
+1.  Auto refresh when file changed.
 2.  Command changed from `static-server`to `static`
 
 ## Getting started
@@ -75,8 +76,6 @@ server.on('response', function (req, res, err, file, stat) {
 * _Can this server run php, ruby, python or any other cgi script?_ **No.**
 * _Is this server ready to receive thousands of requests?_ **Preferably not.**
 
-## Contributors
-An special thank you to [all contributors](https://github.com/nbluis/static-server/graphs/contributors) who allow this project to continue to evolve.
 
 ## License
 [The MIT License (MIT)](http://creativecommons.org/licenses/MIT/)
